@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard – Chatbot Psicológico</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+/* ══ RESET ══ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#4A7DFF;--primary-light:#7E9FFF;--primary-dark:#2563eb;
+  --success:#10b981;--danger:#ef4444;--warning:#f59e0b;--purple:#8b5cf6;
+  --bg:#f0f4ff;--white:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --shadow:0 4px 24px rgba(74,125,255,.10);--radius:1.5rem;
+}
+html,body{height:100%;font-family:'Public Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;font-size:22px;line-height:1}
+
+/* ══ SHELL ══ */
+.stage{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e3a8a,#312e81,#1e1b4b);padding:2rem}
+.shell{width:390px;height:844px;background:var(--bg);border-radius:44px;box-shadow:0 30px 80px rgba(0,0,0,.25),0 0 0 10px #1e293b,0 0 0 12px #334155;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+/* ══ SCREENS ══ */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:90px;animation:fadeIn .22s ease}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ GRAD HEADER ══ */
+.grad-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:2rem 1.25rem 4rem;color:white;position:relative;overflow:hidden;border-radius:0 0 2.5rem 2.5rem;flex-shrink:0}
+.grad-header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,.12);border-radius:50%;filter:blur(30px)}
+.top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.top-row h1{font-size:1.1rem;font-weight:700;text-align:center;flex:1}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);border:none;display:flex;align-items:center;justify-content:center;color:white;cursor:pointer;flex-shrink:0}
+
+/* ══ CARDS ══ */
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:1.1rem}
+.hero-glass{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(12px);border-radius:1.5rem;padding:1.25rem;margin:0 1.25rem;color:white;margin-top:-2.5rem}
+
+/* ══ GRIDS ══ */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;padding:.75rem 1.25rem 0}
+.stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin:0 1.25rem;margin-top:-2rem}
+.metric-card{background:var(--white);border-radius:1.25rem;padding:1rem;box-shadow:var(--shadow);border:1px solid var(--border)}
+.m-icon{width:36px;height:36px;border-radius:.75rem;display:flex;align-items:center;justify-content:center;margin-bottom:.3rem}
+.m-label{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.m-val{font-size:1.45rem;font-weight:800;color:var(--text);line-height:1}
+.m-delta{font-size:.7rem;font-weight:700}
+.up{color:var(--success)}.down{color:var(--danger)}
+
+/* ══ SECTION TITLE ══ */
+.sec{display:flex;justify-content:space-between;align-items:center;padding:.7rem 1.25rem 0}
+.sec h3{font-size:.95rem;font-weight:700}
+.sec a{font-size:.78rem;color:var(--primary);font-weight:600;cursor:pointer}
+
+/* ══ CHART CARD ══ */
+.chart-card{background:var(--white);border-radius:1.5rem;margin:.6rem 1.25rem 0;padding:1.1rem;box-shadow:var(--shadow);border:1px solid var(--border)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:72px;margin-bottom:.4rem}
+.bar{flex:1;border-radius:.35rem .35rem 0 0}
+.bar-lbls{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);font-weight:600}
+
+/* ══ BADGES ══ */
+.badge{display:inline-flex;align-items:center;padding:.18rem .65rem;border-radius:999px;font-size:.63rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.bg{background:#d1fae5;color:#065f46}.br{background:#fee2e2;color:#dc2626}
+.by{background:#fef3c7;color:#d97706}.bb{background:#eff6ff;color:#2563eb}
+.bp{background:#f5f3ff;color:#7c3aed}
+
+/* ══ PATIENT LIST ══ */
+.plist{display:flex;flex-direction:column;gap:.55rem;padding:.6rem 1.25rem 0}
+.pcard{background:var(--white);border-radius:1.25rem;padding:.85rem;display:flex;align-items:center;gap:.7rem;box-shadow:var(--shadow);border:1px solid var(--border);cursor:pointer;transition:transform .15s}
+.pcard:active{transform:scale(.98)}
+.pcard.risk{border-left:4px solid var(--danger)}
+.av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:white;flex-shrink:0;position:relative}
+.dot{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;border:2px solid white}
+
+/* ══ AGENDA ══ */
+.acard{background:var(--white);border-radius:1.25rem;padding:.85rem;display:flex;align-items:center;gap:.7rem;box-shadow:var(--shadow);border:1px solid var(--border)}
+.tblock{background:#eff6ff;border-radius:.75rem;padding:.35rem .55rem;text-align:center;min-width:50px}
+.tblock .t{font-size:.92rem;font-weight:800;color:var(--primary-dark)}
+.tblock .s{font-size:.58rem;color:var(--muted)}
+.cal-strip{display:flex;gap:.45rem;overflow-x:auto;scrollbar-width:none;padding:.25rem 0}
+.cal-strip::-webkit-scrollbar{display:none}
+.cday{min-width:50px;padding:.55rem .4rem;border-radius:.9rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.25);display:flex;flex-direction:column;align-items:center;font-size:.72rem;color:rgba(255,255,255,.9);cursor:pointer}
+.cday.active{background:white;color:var(--primary);font-weight:700}
+.cday .dn{font-size:1.05rem;font-weight:700}
+
+/* ══ SETTINGS ══ */
+.setsec{background:var(--white);border-radius:1.5rem;margin:.65rem 1.25rem 0;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--border)}
+.srow:last-child{border:none}
+.srow-l{display:flex;align-items:center;gap:.7rem}
+.si{width:32px;height:32px;border-radius:.65rem;display:flex;align-items:center;justify-content:center}
+.stitle{font-size:.82rem;font-weight:600}
+.ssub{font-size:.68rem;color:var(--muted)}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{display:none}
+.tt{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.3s}
+.toggle input:checked~.tt{background:var(--primary)}
+.th{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.3s}
+.toggle input:checked~.th{left:20px}
+.pbtn{background:var(--primary);color:white;border:none;padding:.32rem .65rem;border-radius:.5rem;font-size:.7rem;font-weight:700;cursor:pointer}
+.sbtn{background:#e2e8f0;color:var(--text);border:none;padding:.32rem .65rem;border-radius:.5rem;font-size:.7rem;font-weight:700;cursor:pointer}
+
+/* ══ PROFILE ══ */
+.profcard{background:white;border-radius:1.5rem;margin:0 1.25rem;margin-top:-2.5rem;padding:1.1rem;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:.9rem}
+.profav{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:white;flex-shrink:0}
+
+/* ══ RISK BARS ══ */
+.rrow{display:flex;align-items:center;gap:.55rem;margin-bottom:.45rem}
+.rlbl{font-size:.72rem;font-weight:600;width:50px;flex-shrink:0}
+.rbg{flex:1;height:7px;background:#f1f5f9;border-radius:999px;overflow:hidden}
+.rfill{height:100%;border-radius:999px;transition:width .8s ease}
+.rcnt{font-size:.72rem;font-weight:700;width:25px;text-align:right;flex-shrink:0}
+
+/* ══ ALERT ITEM ══ */
+.ait{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-bottom:1px solid var(--border)}
+.ait:last-child{border:none}
+.adot{width:9px;height:9px;border-radius:50%;flex-shrink:0;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ══ PROGRESS ══ */
+.pbar{height:5px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:.4rem}
+.pfill{height:100%;border-radius:999px;transition:width .6s ease}
+
+/* ══ STAT PILL ══ */
+.spill{background:white;border-radius:.9rem;padding:.65rem .4rem;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+.spill .spi{width:28px;height:28px;border-radius:.55rem;margin:0 auto .3rem;display:flex;align-items:center;justify-content:center}
+.spill .spl{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+.spill .spv{font-size:1.05rem;font-weight:800}
+.spill .spd{font-size:.62rem;font-weight:700}
+
+/* ══ LOADING ══ */
+.loading{display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--muted);font-size:.85rem;gap:.5rem}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══ DONUT ══ */
+.donut-wrap{display:flex;align-items:center;gap:.9rem}
+.legend{flex:1;display:flex;flex-direction:column;gap:.35rem}
+.li{display:flex;align-items:center;gap:.45rem;font-size:.73rem}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ══ BOTTOM NAV ══ */
+.bnav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);border-radius:2rem 2rem 0 0;padding:.55rem .4rem 1.1rem;display:flex;justify-content:space-around;box-shadow:0 -4px 24px rgba(0,0,0,.08);z-index:50}
+.nb{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:.35rem .5rem;border-radius:.9rem;color:var(--muted);transition:color .15s}
+.nb.active{color:var(--primary)}
+.nb .material-symbols-outlined{font-size:23px}
+.nb .lbl{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+
+/* ══ TOAST ══ */
+.toast{position:absolute;top:1rem;left:50%;transform:translateX(-50%);background:#0f172a;color:white;padding:.5rem 1rem;border-radius:999px;font-size:.78rem;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+@media(max-width:500px){.stage{padding:0;background:#1e293b;align-items:flex-start}.shell{width:100%;height:100dvh;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="stage">
+<div class="shell">
+  <div class="toast" id="toast"></div>
+
+  <!-- ══════════════ PANEL ══════════════ -->
+  <div class="screen active" id="s-panel">
+    <div class="grad-header">
+      <div class="top-row">
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">smart_toy</span></button>
+        <h1>Panel Principal</h1>
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">notifications</span></button>
+      </div>
+      <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:1.25rem;padding:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">
+          <div><p style="font-size:.72rem;opacity:.8;font-weight:500">Estado General</p><h2 style="font-size:1.5rem;font-weight:800">Saludable</h2></div>
+          <span class="badge bg">ACTIVO</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;opacity:.9">
+          <span class="material-symbols-outlined" style="font-size:15px">trending_up</span>
+          <span id="p-interacciones-txt">Cargando datos...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="m-icon" style="background:#eff6ff"><span class="material-symbols-outlined" style="color:var(--primary)">group</span></div>
+        <div class="m-label">Usuarios Activos</div>
+        <div style="display:flex;align-items:flex-end;gap:.4rem"><div class="m-val" id="p-activos">–</div></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#fff7ed"><span class="material-symbols-outlined" style="color:#f97316">warning</span></div>
+        <div class="m-label">Alto Riesgo</div>
+        <div style="display:flex;align-items:flex-end;gap:.4rem"><div class="m-val" id="p-riesgo">–</div></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#eff6ff"><span class="material-symbols-outlined" style="color:#3b82f6">assignment_turned_in</span></div>
+        <div class="m-label">Pruebas GHQ-12</div>
+        <div style="display:flex;align-items:flex-end;gap:.4rem"><div class="m-val" id="p-tests">–</div></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#f5f3ff"><span class="material-symbols-outlined" style="color:var(--purple)">forum</span></div>
+        <div class="m-label">Interacciones</div>
+        <div style="display:flex;align-items:flex-end;gap:.4rem"><div class="m-val" id="p-interacciones">–</div></div>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:.6rem"><h3>Tendencia de Bienestar</h3></div>
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem">
+        <div><p style="font-size:.78rem;color:var(--muted)">Puntaje Promedio GHQ-12</p><p style="font-size:1.2rem;font-weight:800">Prom: <span id="p-promedio">–</span></p></div>
+      </div>
+      <svg style="width:100%;height:90px" viewBox="0 0 340 90" preserveAspectRatio="none">
+        <defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#4A7DFF" stop-opacity=".25"/><stop offset="100%" stop-color="#4A7DFF" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0 65 C30 65 30 20 60 20 C90 20 90 42 120 42 C150 42 150 72 180 72 C210 72 210 30 240 30 C270 30 270 55 300 55 C320 55 330 25 340 25" stroke="#4A7DFF" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M0 65 C30 65 30 20 60 20 C90 20 90 42 120 42 C150 42 150 72 180 72 C210 72 210 30 240 30 C270 30 270 55 300 55 C320 55 330 25 340 25 V90 H0Z" fill="url(#g1)"/>
+      </svg>
+      <div class="bar-lbls"><span>Sem 1</span><span>Sem 2</span><span>Sem 3</span><span>Sem 4</span></div>
+    </div>
+
+    <div class="sec"><h3>⚠ Alertas Críticas</h3></div>
+    <div class="chart-card" style="padding:0;overflow:hidden" id="p-alertas">
+      <div class="loading"><div class="spin"></div>Cargando alertas…</div>
+    </div>
+
+    <div class="sec"><h3>Niveles de Riesgo</h3></div>
+    <div class="chart-card" id="p-riesgos-chart">
+      <div class="loading"><div class="spin"></div>Cargando…</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PACIENTES ══════════════ -->
+  <div class="screen" id="s-pacientes">
+    <div class="grad-header" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">
+      <div class="top-row">
+        <button class="icon-btn" onclick="goTo('panel')"><span class="material-symbols-outlined" style="font-size:19px">arrow_back</span></button>
+        <h1>Gestión de Pacientes</h1>
+        <button class="icon-btn" onclick="document.getElementById('buscar-input').focus()"><span class="material-symbols-outlined" style="font-size:19px">search</span></button>
+      </div>
+      <p style="font-size:.78rem;opacity:.85;font-weight:500">Panel de Control</p>
+      <h2 style="font-size:1.4rem;font-weight:800;margin:.15rem 0">Hola, Dr. García</h2>
+      <div style="margin-top:.5rem;background:rgba(255,255,255,.15);border-radius:.75rem;display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem">
+        <span class="material-symbols-outlined" style="font-size:18px;opacity:.8">search</span>
+        <input id="buscar-input" type="text" placeholder="Buscar paciente…"
+          style="background:none;border:none;outline:none;color:white;font-family:'Public Sans',sans-serif;font-size:.82rem;width:100%"
+          oninput="buscarPacientes(this.value)"/>
+      </div>
+    </div>
+
+    <div class="stats-row" id="pac-stats">
+      <div class="spill"><div class="spi" style="background:#eff6ff"><span class="material-symbols-outlined" style="color:#3b82f6;font-size:16px">groups</span></div><div class="spl">Total</div><div class="spv" id="stat-total">–</div></div>
+      <div class="spill"><div class="spi" style="background:#f0fdf4"><span class="material-symbols-outlined" style="color:var(--success);font-size:16px">monitor_heart</span></div><div class="spl">Activos</div><div class="spv" id="stat-activos2">–</div></div>
+      <div class="spill"><div class="spi" style="background:#fff7ed"><span class="material-symbols-outlined" style="color:#f97316;font-size:16px">warning</span></div><div class="spl">Riesgo</div><div class="spv" id="stat-riesgo2">–</div></div>
+    </div>
+
+    <div class="sec" style="margin-top:.75rem"><h3>Motivos de Consulta</h3></div>
+    <div class="chart-card" id="pac-motivos"><div class="loading"><div class="spin"></div>Cargando…</div></div>
+
+    <div class="sec"><h3>Pacientes</h3><a onclick="cargarPacientes(1)">Actualizar</a></div>
+    <div class="plist" id="pac-lista"><div class="loading"><div class="spin"></div>Cargando…</div></div>
+  </div>
+
+  <!-- ══════════════ CHAT / MÉTRICAS ══════════════ -->
+  <div class="screen" id="s-chat">
+    <div class="grad-header" style="background:linear-gradient(135deg,#2563eb,#3b82f6,#60a5fa)">
+      <div class="top-row">
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">arrow_back</span></button>
+        <h1>Métricas de Chat</h1>
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">more_vert</span></button>
+      </div>
+      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:.2rem">Resumen de Actividad</h2>
+      <p style="font-size:.75rem;opacity:.8">Datos en tiempo real</p>
+    </div>
+
+    <div class="metric-grid" style="margin-top:-2rem">
+      <div class="metric-card">
+        <div class="m-icon" style="background:#fff7ed"><span class="material-symbols-outlined" style="color:#f97316">timer</span></div>
+        <div class="m-label">Duración Prom.</div>
+        <div class="m-val">12m</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#fef2f2"><span class="material-symbols-outlined" style="color:var(--danger)">crisis_alert</span></div>
+        <div class="m-label">Crisis Detectadas</div>
+        <div class="m-val" id="chat-crisis">–</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#f0fdf4"><span class="material-symbols-outlined" style="color:var(--success)">chat</span></div>
+        <div class="m-label">Total Usuarios</div>
+        <div class="m-val" id="chat-total">–</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#f5f3ff"><span class="material-symbols-outlined" style="color:var(--purple)">psychology</span></div>
+        <div class="m-label">Tests GHQ-12</div>
+        <div class="m-val" id="chat-tests2">–</div>
+      </div>
+    </div>
+
+    <div class="sec"><h3>Actividad por Hora</h3><a>Últimas 24h</a></div>
+    <div class="chart-card">
+      <div class="bars">
+        <div class="bar" style="height:40%;background:#bfdbfe"></div>
+        <div class="bar" style="height:58%;background:#93c5fd"></div>
+        <div class="bar" style="height:82%;background:#60a5fa"></div>
+        <div class="bar" style="height:100%;background:var(--primary)"></div>
+        <div class="bar" style="height:76%;background:#60a5fa"></div>
+        <div class="bar" style="height:52%;background:#93c5fd"></div>
+        <div class="bar" style="height:32%;background:#bfdbfe"></div>
+        <div class="bar" style="height:44%;background:#93c5fd"></div>
+      </div>
+      <div class="bar-lbls"><span>08h</span><span>10h</span><span>12h</span><span>14h</span><span>16h</span><span>18h</span><span>20h</span><span>22h</span></div>
+    </div>
+
+    <div class="sec"><h3>Flujos del Chatbot</h3></div>
+    <div class="chart-card" id="chat-flujos"><div class="loading"><div class="spin"></div>Cargando…</div></div>
+
+    <div class="sec"><h3>Pacientes en Riesgo Alto</h3><a>Ver todos</a></div>
+    <div class="plist" id="chat-alertas-list"><div class="loading"><div class="spin"></div>Cargando…</div></div>
+  </div>
+
+  <!-- ══════════════ AGENDA ══════════════ -->
+  <div class="screen" id="s-agenda">
+    <div class="grad-header" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">
+      <div class="top-row">
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">menu</span></button>
+        <h1>Agenda</h1>
+        <button class="icon-btn" style="position:relative">
+          <span class="material-symbols-outlined" style="font-size:19px">notifications</span>
+          <span style="position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:1.5px solid white"></span>
+        </button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <p style="font-weight:700;font-size:.95rem" id="ag-mes">Octubre 2023</p>
+        <div style="display:flex;gap:.4rem">
+          <span class="material-symbols-outlined" style="cursor:pointer;font-size:19px">chevron_left</span>
+          <span class="material-symbols-outlined" style="cursor:pointer;font-size:19px">chevron_right</span>
+        </div>
+      </div>
+      <div class="cal-strip" id="ag-strip"></div>
+    </div>
+
+    <div class="metric-grid" style="margin-top:-2rem">
+      <div class="metric-card">
+        <div class="m-icon" style="background:#f0fdf4"><span class="material-symbols-outlined" style="color:var(--success)">check_circle</span></div>
+        <div class="m-label">Total Citas</div>
+        <div class="m-val" id="ag-total">–</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-icon" style="background:#eff6ff"><span class="material-symbols-outlined" style="color:var(--primary)">people</span></div>
+        <div class="m-label">Practicantes</div>
+        <div class="m-val" id="ag-pract">–</div>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:.65rem"><h3>Citas del día</h3><a onclick="cargarCitas()">Actualizar</a></div>
+    <div class="plist" id="ag-lista"><div class="loading"><div class="spin"></div>Cargando…</div></div>
+  </div>
+
+  <!-- ══════════════ AJUSTES ══════════════ -->
+  <div class="screen" id="s-ajustes">
+    <div class="grad-header" style="background:linear-gradient(135deg,#2563eb,#4f46e5)">
+      <div class="top-row">
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">arrow_back</span></button>
+        <h1>Ajustes del Sistema</h1>
+        <button class="icon-btn"><span class="material-symbols-outlined" style="font-size:19px">notifications</span></button>
+      </div>
+      <p style="font-size:.75rem;opacity:.8">Configura tu cuenta y gestiona datos</p>
+    </div>
+
+    <div class="profcard">
+      <div class="profav">AR</div>
+      <div style="flex:1"><p style="font-weight:800;font-size:.92rem">Dr. Alejandro Ruiz</p><p style="font-size:.72rem;color:var(--muted)">Psicólogo Clínico</p></div>
+      <div style="text-align:center;padding:0 .65rem;border-left:1px solid var(--border)">
+        <p style="font-size:1.1rem;font-weight:800;color:var(--primary)" id="aj-citas">–</p>
+        <p style="font-size:.58rem;color:var(--muted);text-transform:uppercase;font-weight:600">Citas</p>
+      </div>
+      <div style="text-align:center;padding:0 .65rem;border-left:1px solid var(--border)">
+        <p style="font-size:1.1rem;font-weight:800;color:var(--primary)" id="aj-pract2">–</p>
+        <p style="font-size:.58rem;color:var(--muted);text-transform:uppercase;font-weight:600">Practicantes</p>
+      </div>
+    </div>
+
+    <div class="sec" style="margin-top:.75rem"><h3>Salud del Sistema</h3></div>
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
+          <div class="m-label">Uptime</div><span class="badge bg" style="font-size:.58rem">ACTIVO</span>
+        </div>
+        <div class="m-val">99.98%</div>
+        <div class="pbar"><div class="pfill" style="width:99.98%;background:var(--success)"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label" style="margin-bottom:.4rem">Latencia</div>
+        <div class="m-val">124ms</div>
+        <div style="font-size:.7rem;color:var(--primary);font-weight:600;margin-top:.2rem">Óptimo</div>
+      </div>
+    </div>
+
+    <div class="sec"><h3>Exportar Datos</h3></div>
+    <div class="setsec">
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#eff6ff"><span class="material-symbols-outlined" style="color:var(--primary);font-size:17px">history</span></div>
+          <div><div class="stitle">Pacientes</div><div class="ssub">JSON / CSV</div></div>
+        </div>
+        <div style="display:flex;gap:.35rem">
+          <button class="pbtn" onclick="exportar('pacientes','json')">JSON</button>
+          <button class="sbtn" onclick="exportar('pacientes','csv')">CSV</button>
+        </div>
+      </div>
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#f5f3ff"><span class="material-symbols-outlined" style="color:var(--purple);font-size:17px">analytics</span></div>
+          <div><div class="stitle">Tests GHQ-12</div><div class="ssub">JSON / CSV</div></div>
+        </div>
+        <div style="display:flex;gap:.35rem">
+          <button class="pbtn" onclick="exportar('tests','json')">JSON</button>
+          <button class="sbtn" onclick="exportar('tests','csv')">CSV</button>
+        </div>
+      </div>
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#f0fdf4"><span class="material-symbols-outlined" style="color:var(--success);font-size:17px">calendar_month</span></div>
+          <div><div class="stitle">Citas</div><div class="ssub">JSON / CSV</div></div>
+        </div>
+        <div style="display:flex;gap:.35rem">
+          <button class="pbtn" onclick="exportar('citas','json')">JSON</button>
+          <button class="sbtn" onclick="exportar('citas','csv')">CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec"><h3>Preferencias</h3></div>
+    <div class="setsec">
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#1e293b"><span class="material-symbols-outlined" style="color:#94a3b8;font-size:17px">dark_mode</span></div>
+          <div><div class="stitle">Modo Oscuro</div><div class="ssub">Tema claro / oscuro</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked/><div class="tt"></div><div class="th"></div></label>
+      </div>
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#fff7ed"><span class="material-symbols-outlined" style="color:#f97316;font-size:17px">notifications</span></div>
+          <div><div class="stitle">Notificaciones</div><div class="ssub">Alertas de mensajes</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox"/><div class="tt"></div><div class="th"></div></label>
+      </div>
+      <div class="srow">
+        <div class="srow-l">
+          <div class="si" style="background:#f0fdf4"><span class="material-symbols-outlined" style="color:var(--success);font-size:17px">language</span></div>
+          <div><div class="stitle">Idioma</div><div class="ssub">Español (Colombia)</div></div>
+        </div>
+        <span class="material-symbols-outlined" style="color:var(--muted);font-size:18px">chevron_right</span>
+      </div>
+    </div>
+
+    <div style="margin:.65rem 1.25rem 0;background:#fef2f2;border:1px solid #fecaca;border-radius:1.25rem;padding:.9rem">
+      <p style="font-weight:700;color:var(--danger);margin-bottom:.2rem">⚠ Zona de Peligro</p>
+      <p style="font-size:.72rem;color:#ef4444;opacity:.8;margin-bottom:.65rem">Estas acciones son irreversibles.</p>
+      <div style="display:flex;gap:.55rem">
+        <button onclick="showToast('Esta acción requiere confirmación en producción')" style="background:var(--danger);color:white;border:none;padding:.4rem .8rem;border-radius:.55rem;font-size:.75rem;font-weight:700;cursor:pointer">Eliminar Historial</button>
+        <button onclick="showToast('Desactivar cuenta requiere autorización')" style="border:1px solid #fecaca;background:transparent;color:var(--danger);padding:.4rem .8rem;border-radius:.55rem;font-size:.75rem;font-weight:700;cursor:pointer">Desactivar Cuenta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BOTTOM NAV ══ -->
+  <nav class="bnav">
+    <button class="nb active" id="nb-panel"     onclick="goTo('panel')">   <span class="material-symbols-outlined">home</span>         <span class="lbl">Inicio</span>   </button>
+    <button class="nb"        id="nb-pacientes" onclick="goTo('pacientes')"><span class="material-symbols-outlined">groups</span>        <span class="lbl">Pacientes</span></button>
+    <button class="nb"        id="nb-chat"      onclick="goTo('chat')">    <span class="material-symbols-outlined">bar_chart</span>     <span class="lbl">Reportes</span> </button>
+    <button class="nb"        id="nb-agenda"    onclick="goTo('agenda')">  <span class="material-symbols-outlined">calendar_month</span><span class="lbl">Agenda</span>   </button>
+    <button class="nb"        id="nb-ajustes"   onclick="goTo('ajustes')"> <span class="material-symbols-outlined">settings</span>      <span class="lbl">Ajustes</span>  </button>
+  </nav>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════
+const API = '/api';          // mismo origen que el servidor Node
+let buscarTimer = null;
+let citasFecha  = new Date().toISOString().split('T')[0];
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function $(id)    { return document.getElementById(id); }
+function set(id, v){ const e=$(id); if(e) e.textContent = v; }
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function api(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch(e) {
+    console.error('API error:', path, e);
+    return null;
+  }
+}
+
+function nivelColor(n) {
+  return {Alto:'br',Medio:'by',Bajo:'bg',Mínimo:'bb','Sin test':'bp'}[n] || 'bb';
+}
+function initials(nombre='', apellido='') {
+  return ((nombre[0]||'')+(apellido[0]||'')).toUpperCase() || '?';
+}
+function avatarGrad(nivel) {
+  return {Alto:'linear-gradient(135deg,#ef4444,#f87171)',Medio:'linear-gradient(135deg,#f59e0b,#fbbf24)',
+          Bajo:'linear-gradient(135deg,#10b981,#34d399)',Mínimo:'linear-gradient(135deg,#4A7DFF,#7E9FFF)','Sin test':'linear-gradient(135deg,#94a3b8,#cbd5e1)'}[nivel]||'linear-gradient(135deg,#4A7DFF,#7E9FFF)';
+}
+
+// ══════════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════════
+function goTo(page) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  $('s-'+page).classList.add('active');
+  $('nb-'+page).classList.add('active');
+  $('s-'+page).scrollTop = 0;
+  // lazy load
+  if (page==='pacientes' && !window._pacLoaded) { cargarPacientes(); cargarDemograficos(); window._pacLoaded=true; }
+  if (page==='chat'      && !window._chatLoaded){ cargarChat();      window._chatLoaded=true; }
+  if (page==='agenda'    && !window._agLoaded)  { cargarAgenda();    window._agLoaded=true; }
+  if (page==='ajustes'   && !window._ajLoaded)  { cargarAjustes();   window._ajLoaded=true; }
+}
+
+// ══════════════════════════════════════════
+//  PANEL PRINCIPAL
+// ══════════════════════════════════════════
+async function cargarPanel() {
+  const [res, tend, al] = await Promise.all([
+    api('/dashboard/resumen'),
+    api('/dashboard/tendencia'),
+    api('/dashboard/alertas'),
+  ]);
+
+  if (res) {
+    set('p-activos',       res.usuariosActivos ?? res.totalUsuarios ?? '–');
+    set('p-riesgo',        res.altoRiesgo  ?? '–');
+    set('p-tests',         res.totalTestsGhq ?? '–');
+    set('p-interacciones', res.conHistorial ?? '–');
+    set('p-interacciones-txt', `${res.conHistorial ?? 0} interacciones registradas`);
+  }
+  if (tend) {
+    set('p-promedio', tend.promedio ?? '–');
+    renderRiesgos(tend);
+  }
+  if (al) renderAlertas(al);
+}
+
+function renderAlertas(data) {
+  const c = $('p-alertas');
+  if (!data.length) { c.innerHTML='<div class="loading">Sin alertas críticas ✓</div>'; return; }
+  c.innerHTML = data.map(a => `
+    <div class="ait">
+      <div class="adot" style="background:var(--danger)"></div>
+      <div style="flex:1">
+        <p style="font-size:.83rem;font-weight:700">${a.nombre||''} ${a.apellido||''} </p>
+        <p style="font-size:.7rem;color:var(--muted)">${a.motivo||'Sin motivo'} · Puntaje ${a.Puntaje}</p>
+      </div>
+      <span class="badge br">Alto</span>
+    </div>`).join('');
+}
+
+function renderRiesgos(t) {
+  const total = (t.alto||0)+(t.medio||0)+(t.bajo||0)+(t.minimo||0)||1;
+  $('p-riesgos-chart').innerHTML = `
+    <div class="rrow"><span class="rlbl" style="color:var(--danger)">Alto</span><div class="rbg"><div class="rfill" style="width:${(t.alto/total*100).toFixed(0)}%;background:var(--danger)"></div></div><span class="rcnt" style="color:var(--danger)">${t.alto||0}</span></div>
+    <div class="rrow"><span class="rlbl" style="color:var(--warning)">Medio</span><div class="rbg"><div class="rfill" style="width:${(t.medio/total*100).toFixed(0)}%;background:var(--warning)"></div></div><span class="rcnt" style="color:var(--warning)">${t.medio||0}</span></div>
+    <div class="rrow"><span class="rlbl" style="color:var(--success)">Bajo</span><div class="rbg"><div class="rfill" style="width:${(t.bajo/total*100).toFixed(0)}%;background:var(--success)"></div></div><span class="rcnt" style="color:var(--success)">${t.bajo||0}</span></div>
+    <div class="rrow"><span class="rlbl" style="color:var(--primary)">Mínimo</span><div class="rbg"><div class="rfill" style="width:${(t.minimo/total*100).toFixed(0)}%;background:var(--primary)"></div></div><span class="rcnt" style="color:var(--primary)">${t.minimo||0}</span></div>`;
+}
+
+// ══════════════════════════════════════════
+//  PACIENTES
+// ══════════════════════════════════════════
+async function cargarPacientes(page=1, buscar='') {
+  $('pac-lista').innerHTML = '<div class="loading"><div class="spin"></div>Cargando…</div>';
+  const data = await api(`/pacientes?page=${page}&limit=15&buscar=${encodeURIComponent(buscar)}`);
+  if (!data) { $('pac-lista').innerHTML='<div class="loading">Error de conexión</div>'; return; }
+
+  set('stat-total',    data.total ?? '–');
+  set('stat-activos2', data.pacientes?.filter(p=>p.flujo!=='finalizado').length ?? '–');
+  set('stat-riesgo2',  data.pacientes?.filter(p=>p.nivelRiesgo==='Alto').length ?? '–');
+
+  if (!data.pacientes?.length) { $('pac-lista').innerHTML='<div class="loading">Sin resultados</div>'; return; }
+  $('pac-lista').innerHTML = data.pacientes.map(p => `
+    <div class="pcard${p.nivelRiesgo==='Alto'?' risk':''}" onclick="showToast('${p.nombre} ${p.apellido} · GHQ: ${p.puntajeGhq??'Sin test'}')">
+      <div class="av" style="background:${avatarGrad(p.nivelRiesgo)}">${initials(p.nombre,p.apellido)}<div class="dot" style="background:${p.nivelRiesgo==='Alto'?'var(--danger)':p.nivelRiesgo==='Medio'?'var(--warning)':'var(--success)'}"></div></div>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre||''} ${p.apellido||''}</p>
+        <p style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.motivo||'Sin motivo'} · ${p.flujo}</p>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <span class="badge ${nivelColor(p.nivelRiesgo)}">${p.nivelRiesgo}</span>
+        <p style="font-size:.63rem;color:var(--muted);margin-top:.2rem">${p.puntajeGhq??'–'} pts</p>
+      </div>
+    </div>`).join('');
+}
+
+async function cargarDemograficos() {
+  const data = await api('/pacientes/demograficos');
+  if (!data) return;
+  if (data.motivos?.length) {
+    $('pac-motivos').innerHTML = data.motivos.map(m => `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div style="display:flex;align-items:center;gap:.45rem">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></div>
+          <span style="font-size:.78rem">${m.motivo}</span>
+        </div>
+        <span style="font-size:.78rem;font-weight:700;color:var(--primary)">${m.total}</span>
+      </div>`).join('');
+  } else {
+    $('pac-motivos').innerHTML = '<div class="loading">Sin datos</div>';
+  }
+}
+
+function buscarPacientes(v) {
+  clearTimeout(buscarTimer);
+  buscarTimer = setTimeout(() => cargarPacientes(1, v), 400);
+}
+
+// ══════════════════════════════════════════
+//  CHAT / MÉTRICAS
+// ══════════════════════════════════════════
+async function cargarChat() {
+  const [res, dem, al] = await Promise.all([
+    api('/dashboard/resumen'),
+    api('/pacientes/demograficos'),
+    api('/dashboard/alertas'),
+  ]);
+  if (res) {
+    set('chat-crisis',  res.altoRiesgo ?? '–');
+    set('chat-total',   res.totalUsuarios ?? '–');
+    set('chat-tests2',  res.totalTestsGhq ?? '–');
+  }
+  if (dem?.flujos?.length) {
+    const total = dem.flujos.reduce((a,f)=>a+f.total,0)||1;
+    const cols = ['var(--primary)','#6366f1','var(--success)','var(--warning)','var(--danger)'];
+    $('chat-flujos').innerHTML = `
+      <div class="donut-wrap">
+        <svg width="75" height="75" viewBox="0 0 80 80">
+          ${(() => {
+            let off = 0;
+            return dem.flujos.map((f,i)=>{
+              const pct = f.total/total;
+              const da  = (pct*188).toFixed(1);
+              const el  = `<circle cx="40" cy="40" r="30" fill="none" stroke="${cols[i%cols.length]}" stroke-width="11" stroke-dasharray="${da} ${(188-da).toFixed(1)}" stroke-dashoffset="${-off}" transform="rotate(-90 40 40)"/>`;
+              off += parseFloat(da);
+              return el;
+            }).join('');
+          })()}
+        </svg>
+        <div class="legend">${dem.flujos.map((f,i)=>`
+          <div class="li"><div class="ldot" style="background:${cols[i%cols.length]}"></div>
+          <span>${f.flujo} (${f.total})</span></div>`).join('')}
+        </div>
+      </div>`;
+  }
+  if (al?.length) {
+    $('chat-alertas-list').innerHTML = al.map(a => `
+      <div class="pcard risk">
+        <div class="av" style="background:linear-gradient(135deg,#ef4444,#f87171)">${initials(a.nombre,a.apellido)}<div class="dot" style="background:var(--danger)"></div></div>
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:700;font-size:.85rem">${a.nombre||''} ${a.apellido||''}</p>
+          <p style="font-size:.7rem;color:var(--muted)">${a.motivo||'Sin motivo'} · ${a.Puntaje} pts</p>
+        </div>
+        <span class="badge br">Alto</span>
+      </div>`).join('');
+  } else {
+    $('chat-alertas-list').innerHTML = '<div class="loading">Sin alertas críticas ✓</div>';
+  }
+}
+
+// ══════════════════════════════════════════
+//  AGENDA
+// ══════════════════════════════════════════
+async function cargarAgenda() {
+  buildCalStrip();
+  const [stats, citas] = await Promise.all([
+    api('/agenda/stats'),
+    api('/agenda/citas'),
+  ]);
+  if (stats) {
+    set('ag-total', stats.totalCitas ?? '–');
+    set('ag-pract', stats.practicantes ?? '–');
+  }
+  renderCitas(citas);
+}
+
+async function cargarCitas() {
+  const data = await api('/agenda/citas');
+  renderCitas(data);
+}
+
+function renderCitas(data) {
+  if (!data?.length) { $('ag-lista').innerHTML='<div class="loading">Sin citas programadas</div>'; return; }
+  $('ag-lista').innerHTML = data.map(c => {
+    const hora = c.fechaHora?.includes('T')
+      ? new Date(c.fechaHora).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})
+      : c.fechaHora?.substring(11,16) || c.fechaHora;
+    const [pacNom='', pacApe=''] = (c.paciente||'').split(' ');
+    return `
+    <div class="acard">
+      <div class="tblock"><div class="t">${hora||'–'}</div><div class="s">hoy</div></div>
+      <div class="av" style="width:38px;height:38px;font-size:.78rem;background:linear-gradient(135deg,var(--primary),var(--primary-light))">${initials(pacNom,pacApe)}</div>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.paciente||'–'}</p>
+        <p style="font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.consultorio||''} · ${c.practicante||''}</p>
+      </div>
+      <button onclick="eliminarCita('${c.idCita}')" style="background:#fee2e2;color:var(--danger);border:none;width:28px;height:28px;border-radius:.5rem;cursor:pointer;font-size:.85rem;flex-shrink:0">✕</button>
+    </div>`;
+  }).join('');
+}
+
+async function eliminarCita(id) {
+  if (!confirm('¿Eliminar esta cita?')) return;
+  const r = await fetch(`${API}/agenda/citas/${id}`, { method:'DELETE' });
+  showToast(r.ok ? 'Cita eliminada' : 'Error al eliminar');
+  cargarCitas();
+}
+
+function buildCalStrip() {
+  const hoy   = new Date();
+  const dias   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = '';
+  for (let i = -1; i <= 4; i++) {
+    const d = new Date(hoy); d.setDate(hoy.getDate() + i);
+    const activo = i === 0 ? 'active' : '';
+    html += `<div class="cday ${activo}" onclick="selDia(this,'${d.toISOString().split('T')[0]}')">
+      <span style="font-size:.62rem">${dias[d.getDay()]}</span>
+      <span class="dn">${d.getDate()}</span>
+    </div>`;
+  }
+  $('ag-strip').innerHTML = html;
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  set('ag-mes', `${meses[hoy.getMonth()]} ${hoy.getFullYear()}`);
+}
+
+function selDia(el, fecha) {
+  document.querySelectorAll('.cday').forEach(d => d.classList.remove('active'));
+  el.classList.add('active');
+  citasFecha = fecha;
+  cargarCitas();
+}
+
+// ══════════════════════════════════════════
+//  AJUSTES
+// ══════════════════════════════════════════
+async function cargarAjustes() {
+  const data = await api('/agenda/stats');
+  if (data) {
+    set('aj-citas',  data.totalCitas   ?? '–');
+    set('aj-pract2', data.practicantes ?? '–');
+  }
+}
+
+// ══════════════════════════════════════════
+//  EXPORTAR
+// ══════════════════════════════════════════
+function exportar(tipo, fmt) {
+  showToast(`Descargando ${tipo}.${fmt}…`);
+  window.location.href = `${API}/exportar/${tipo}?formato=${fmt}`;
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+cargarPanel();
+</script>
+</body>
+</html>
